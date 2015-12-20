@@ -4,4 +4,4 @@ suites:
     Http:
         namespace: RawPHP\Http
         psr4_prefix: RawPHP\Http
-        spec_path: rawphp/http/src
+        spec_path: src

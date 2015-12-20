@@ -1,7 +1,6 @@
 extensions:
 #    - PhpSpec\Extension\CodeCoverageExtension
 suites:
-    # Components
     Http:
         namespace: RawPHP\Http
         psr4_prefix: RawPHP\Http

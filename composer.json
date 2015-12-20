@@ -12,7 +12,7 @@
     ],
     "autoload": {
         "psr-4": {
-            "RawPHP\\Http\\": "rawphp/http/src/"
+            "RawPHP\\Http\\": "src/"
         }
     },
     "require": {

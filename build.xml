@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="rawphp/http" default="dev" basedir=".">
+
+    <property environment="test" />
+    <property file="build.properties" />
+
+    <target name="ci" depends="prepare,phpspec,code-standards-ci,security-advisory-check-ci,code-metrics-ci,lint" description="Run automated tests" />
+    <target name="dev" depends="clean,prepare,phpspec,code-standards,code-metrics,lint" description="Pre commit build check" />
+
+    <!-- PREPARE -->
+    <target name="prepare" depends="clean" description="Prepare for build">
+        <mkdir dir="build/api" />
+        <mkdir dir="build/code-browser" />
+        <mkdir dir="build/coverage" />
+        <mkdir dir="build/logs" />
+        <mkdir dir="build/pdepend" />
+        <mkdir dir="build/cache" />
+    </target>
+
+    <!-- CLEAN UP -->
+    <target name="clean" description="Cleanup build artifacts">
+        <delete dir="build/api" />
+        <delete dir="build/code-browser" />
+        <delete dir="build/coverage" />
+        <delete dir="build/logs" />
+        <delete dir="build/pdepend" />
+        <mkdir dir="build/cache" />
+    </target>
+
+    <!-- COMPOSER INSTALL -->
+    <target name="composer-ci" description="Load 3rd party dependencies for dev mode">
+        <delete dir="vendor" />
+        <exec executable="composer">
+            <arg value="install" />
+            <arg value="--dev" />
+            <arg value="--prefer-dist" />
+        </exec>
+    </target>
+
+    <target name="cs" depends="code-standards"/>
+
+    <target name="code-standards" description="Find coding standard violations, but report in format for C.I">
+        <exec executable="bin/phpcs.bat" failonerror="true">
+            <arg value="--report=checkstyle" />
+            <arg value="--report-file=build/logs/checkstyle.xml" />
+            <arg value="--standard=phpcs.xml" />
+            <arg value="--extensions=php,inc" />
+            <arg path="src" />
+        </exec>
+    </target>
+
+    <target name="code-standards-ci" description="Find coding standard violations, but report in format for C.I">
+        <exec executable="bin/phpcs" output="/dev/null" failonerror="true">
+            <arg value="--report=checkstyle" />
+            <arg value="--report-file=build/logs/checkstyle.xml" />
+            <arg value="--standard=phpcs.xml" />
+            <arg value="--extensions=php,inc" />
+            <arg path="src" />
+        </exec>
+    </target>
+
+    <!-- PHPLOC target -->
+    <target name="phploc"
+            description="Measure project size using PHPLOC and print human readable output. Intended for usage on the command line.">
+        <exec executable="bin/phploc.bat" failonerror="true">
+            <arg value="--exclude" />
+            <arg value="vendor" />
+            <arg value="--exclude" />
+            <arg value="node_modules" />
+            <arg value="--exclude" />
+            <arg value="shippable" />
+            <arg value="--count-tests" />
+            <arg path="${basedir}/" />
+        </exec>
+    </target>
+
+    <!-- PHPLOC-CI target -->
+    <target name="phploc-ci"
+            depends="prepare"
+            description="Measure project size using PHPLOC and log result in CVS and XML format. Intended of usage within a continuous integration environment">
+        <exec executable="bin/phploc" failonerror="true">
+            <arg value="--exclude" />
+            <arg value="vendor" />
+            <arg value="--exclude" />
+            <arg value="node_modules" />
+            <arg value="--exclude" />
+            <arg value="shippable" />
+            <arg value="--log-csv" />
+            <arg path="${shippable}/logs/phploc.cvs" />
+            <arg value="--log-xml" />
+            <arg path="${shippable}/logs/phploc.xml" />
+            <arg value="--count-tests" />
+            <arg path="${basedir}" />
+        </exec>
+    </target>
+
+    <target name="duplicate-code-ci" description="Find duplicate code">
+        <exec executable="bin/phpcpd">
+            <arg value="--log-pmd" />
+            <arg value="build/logs/pmd-cpd.xml" />
+            <arg path="src" />
+        </exec>
+    </target>
+
+    <target name="code-metrics" description="Calculate software metrics">
+        <exec executable="bin/pdepend.bat" failonerror="true">
+            <arg value="--jdepend-xml=build/logs/jdepend.xml" />
+            <arg value="--jdepend-chart=build/pdepend/dependencies.svg" />
+            <arg value="--overview-pyramid=build/pdepend/overview-pyramid.svg" />
+            <arg value="--ignore=vendor" />
+            <arg path="src" />
+        </exec>
+    </target>
+
+    <target name="code-metrics-ci" description="Calculate software metrics">
+        <exec executable="bin/pdepend">
+            <arg value="--jdepend-xml=build/logs/jdepend.xml" />
+            <arg value="--jdepend-chart=build/pdepend/dependencies.svg" />
+            <arg value="--overview-pyramid=build/pdepend/overview-pyramid.svg" />
+            <arg value="--ignore=vendor" />
+            <arg path="src" />
+        </exec>
+    </target>
+
+    <target name="lint" description="Perform syntax check">
+        <apply executable="php" failonerror="true">
+            <arg value="-l" />
+            <fileset dir="src">
+                <include name="**/*.php" />
+                <modified update="false" />
+            </fileset>
+        </apply>
+    </target>
+
+    <target name="security-advisory-check" description="Check composer.lock against SensioLabs security advisor">
+        <exec executable="bin/security-checker.bat" failonerror="true">
+            <arg value="security:check" />
+            <arg value="composer.lock" />
+        </exec>
+    </target>
+
+    <target name="security-advisory-check-ci" description="Check composer.lock against SensioLabs security advisor">
+        <exec executable="bin/security-checker" failonerror="true">
+            <arg value="security:check" />
+            <arg value="composer.lock" />
+        </exec>
+    </target>
+
+    <!-- PHPSPEC -->
+    <target name="phpspec" description="Run specs">
+        <exec executable="bin/phpspec.bat" failonerror="true">
+            <arg value="run" />
+            <arg value="-f" />
+            <arg value="dot" />
+            <arg value="-n" />
+        </exec>
+    </target>
+
+    <target name="phpspec-ci" description="Run specs">
+        <exec executable="bin/phpspec" failonerror="true">
+            <arg value="run" />
+            <arg value="-f" />
+            <arg value="dot" />
+            <arg value="-n" />
+        </exec>
+    </target>
+
+</project>

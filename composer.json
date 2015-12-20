@@ -1,0 +1,30 @@
+{
+    "name": "rawphp/http",
+    "description": "A reusable Guzzle client extension",
+    "minimum-stability": "dev",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Tom Kaczocha",
+            "email": "tom@crazydev.org"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "RawPHP\\Http\\": "rawphp/http/src/"
+        }
+    },
+    "require": {
+        "guzzlehttp/guzzle": "^6.1",
+        "behat/behat": "^3.0"
+    },
+    "require-dev": {
+        "phpspec/phpspec": "^2.4"
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "0.x-dev"
+        }
+    }
+}

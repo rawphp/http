@@ -36,7 +36,9 @@ class PredictedHandler implements IHandler
         }
 
         if (!empty($options['matchers'])) {
-            $this->setMatchers($options['matchers']);
+            foreach ($options['matchers'] as $key => $matcher) {
+                $this->addMatcher($key, $matcher);
+            }
         }
     }
 
@@ -105,15 +107,32 @@ class PredictedHandler implements IHandler
     }
 
     /**
-     * @param array $matchers
+     * @param string   $name
+     * @param callable $matcher
      *
      * @return PredictedHandler
      */
-    public function setMatchers(array $matchers)
+    public function addMatcher($name, $matcher)
     {
-        foreach ($matchers as $matcher) {
-            if (is_callable($matcher)) {
-                $this->matchers[] = $matcher;
+        if (is_callable($matcher)) {
+            $this->matchers[$name] = $matcher;
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param string $name
+     *
+     * @return PredictedHandler
+     */
+    public function removeMatcher($name)
+    {
+        foreach ($this->matchers as $key => $matcher) {
+            if ($name === $key) {
+                unset($this->matchers[$key]);
+
+                break;
             }
         }
 
